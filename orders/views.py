@@ -20,10 +20,26 @@ class OrderCreateView(generics.CreateAPIView):
     serializer_class = OrderCreateSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
+    # def perform_create(self, serializer):
+    #     order = serializer.save()
+    #     # Send confirmation email asynchronously
+    #     # send_order_confirmation_email.delay(order.id)
+    #     # New line without Celery
+    #     send_order_confirmation_email(order.id)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         order = serializer.save()
-        # Send confirmation email asynchronously
-        send_order_confirmation_email.delay(order.id)
+        
+        # Send confirmation email
+        send_order_confirmation_email(order.id)
+
+        # Custom response with order ID
+        return Response(
+            {"message": "Order created successfully", "id": order.id},
+            status=status.HTTP_201_CREATED
+        )
+
 
 class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
