@@ -30,7 +30,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
         user = request.user
-        
+        print(user)
+        print(user.cart)
         # Get user's cart
         try:
             cart = user.cart

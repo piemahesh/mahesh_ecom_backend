@@ -34,13 +34,20 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
 
 class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.filter(is_active=True)
+    # queryset = Product.objects.filter(is_active=True)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['category', 'price']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'price', 'created_at']
     ordering = ['-created_at']
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated and user.is_admin:
+            return Product.objects.all()
+        return Product.objects.filter(is_active=True)
+
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
